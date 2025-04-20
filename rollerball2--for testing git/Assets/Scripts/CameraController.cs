@@ -48,8 +48,8 @@ public class CameraBehaviourScript : MonoBehaviour
             transform.rotation = rotation; // 攝影機 新角度
         }
         // 攝影機新位置 = 新相對位置 + 母球位置
-        transform.position = player.transform.position + offset;
-        if (Input.GetMouseButton(1)) // 按滑鼠右鍵 按住 蓄力
+        transform.position = player.transform.position+offset;
+       /* if (Input.GetButton("W")) // 按滑鼠右鍵 按住 蓄力
         {
             force += Time.deltaTime * forceSpd; // 大小和時間成正比
         }
@@ -62,7 +62,7 @@ public class CameraBehaviourScript : MonoBehaviour
                                //力量模式 impulse:衝力，speed：初速大小
             rbody.AddForce(movement * speed * force, ForceMode.Impulse);
             force = 0.0f; // 力量用盡歸 0，準備下次重新蓄力
-        }
+        }*/
     }
     public static float ClampAngle(float angle, float min, float max)
     { // 用上下限 夾值
@@ -72,4 +72,6 @@ public class CameraBehaviourScript : MonoBehaviour
             angle -= 360F;
         return Mathf.Clamp(angle, min, max);
     }
+
+    
 }
