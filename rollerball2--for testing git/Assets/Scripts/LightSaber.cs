@@ -244,7 +244,7 @@ public class Lighsaber : MonoBehaviour
         {
             Rigidbody rb = slice.GetComponent<Rigidbody>();
             Collider col = slice.GetComponent<Collider>();
-            StartCoroutine(DisableInteractionAfterDelay(slice, rb, col, 10f));
+            //StartCoroutine(DisableInteractionAfterDelay(slice, rb, col, 10f));
         }
 
         // Optional: push one half

@@ -28,12 +28,14 @@ public class CameraBehaviourScript : MonoBehaviour
         x = angles.y;
         y = angles.x;
         rbody = player.GetComponent<Rigidbody>();
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
     // Update is called once per frame
     void LateUpdate()
     {
-        if (Input.GetMouseButton(1))
-        {
+        
             x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
             y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
             y = ClampAngle(y, yMinLimit, yMaxLimit); // 限制 仰角 傾仰範圍
@@ -49,7 +51,7 @@ public class CameraBehaviourScript : MonoBehaviour
             transform.rotation = rotation; // 攝影機 新角度
                                            //sword.transform.rotation = rotation;
 
-        }
+        
         // 攝影機新位置 = 新相對位置 + 母球位置
         transform.position = player.transform.position+offset;
         /* if (Input.GetButton("W")) // 按滑鼠右鍵 按住 蓄力

@@ -10,7 +10,7 @@ public class BladeTrail : MonoBehaviour
     [Tooltip("Number of trail frames to store")]
     public int frameCount = 3;
 
-    private const int VERTICES_PER_FRAME = 18;
+    private const int VERTICES_PER_FRAME = 12;
 
     private Mesh trailMesh;
     private Vector3[] vertices;
