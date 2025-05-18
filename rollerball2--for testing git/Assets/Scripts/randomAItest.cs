@@ -38,7 +38,7 @@ public class randomAItest : MonoBehaviour //don't forget to change the script na
                 if (hit.transform.CompareTag("Player"))
                 {
                     chase();
-                    Debug.Log("bob Raycast hit: " + hit.transform.name);
+                    //Debug.Log("bob Raycast hit: " + hit.transform.name);
                 }
 
             }
@@ -76,7 +76,7 @@ public class randomAItest : MonoBehaviour //don't forget to change the script na
     private void chase()
     {
         agent.SetDestination(player.position);
-        Debug.Log("bob is chasing player");
+        //Debug.Log("bob is chasing player");
     }
 
 }

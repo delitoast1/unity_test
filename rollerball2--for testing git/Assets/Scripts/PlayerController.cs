@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     private float movementY;
     private bool isGrounded = true;
     public float jumpForce = 5f;
+    public float teleportDistance = 10f;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -36,19 +38,30 @@ public class PlayerController : MonoBehaviour
         Vector3 camRight = cameraTransform.right;
         camRight.y = 0f;
         camRight.Normalize();
-       
-        // Move based on camera-relative input
+
+        // WASD movement vector relative to camera
         Vector3 movement = camRight * movementX + camForward * movementY;
 
         rb.AddForce(movement * speed);
 
-        // --- Jumping ---
+        // Jump
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false;
         }
+
+        // Teleport in WASD direction (if moving)
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (movement.sqrMagnitude > 0.01f)
+            {
+                Vector3 teleportDirection = movement.normalized;
+                transform.position += teleportDirection * teleportDistance;
+            }
+        }
     }
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision.contacts[0].normal.y > 0.5f) // Hit from below

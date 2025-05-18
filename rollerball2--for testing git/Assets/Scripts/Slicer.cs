@@ -24,6 +24,8 @@ namespace Assets.Scripts
             if (sliceable == null)
             {
                 throw new NotSupportedException("Cannot slice non sliceable object, add the sliceable script to the object or inherit from sliceable to support slicing");
+                Debug.Log("nope");
+                
             }
 
             //Create left and right slice of hollow object

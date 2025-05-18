@@ -1,41 +1,54 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class hitmousebutton : MonoBehaviour
 {
     Animator animator;
-    public GameObject gameobject;       // Presumably the blade
+    //public GameObject gameobject;       
     public GameObject bladelength;      // The part that stretches
     public float growthRate = 1f;       // How fast the blade grows per second
+    public float resetDelay = 1.0f;     // Time in seconds before scale resets
     private bool isGrowing = false;
+    private float resetTimer = 0f;
 
     void Start()
     {
-        gameobject.SetActive(false);
+        //gameobject.SetActive(false);
         animator = GetComponent<Animator>();
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) // Start growing blade
+        if (Input.GetMouseButtonDown(0))
         {
             isGrowing = true;
+            resetTimer = 0f; // cancel any pending reset
         }
 
-        if (Input.GetMouseButtonUp(0)) // Stop growing, activate blade, play animation
+        if (Input.GetMouseButtonUp(0))
         {
             isGrowing = false;
-            gameobject.SetActive(true);
+            resetTimer = resetDelay; // start the reset countdown
+            //gameobject.SetActive(true);
             animator.SetTrigger("PlaySwing");
-           
         }
 
         if (isGrowing)
         {
-            // Increase the localScale of the blade in the Y direction (or adjust as needed)
             Vector3 scale = bladelength.transform.localScale;
             scale.z += growthRate * Time.deltaTime;
+            
+            
+            
             bladelength.transform.localScale = scale;
         }
-        
+        else if (resetTimer > 0f)
+        {
+            resetTimer -= Time.deltaTime;
+            if (resetTimer <= 0f)
+            {
+                bladelength.transform.localScale = new Vector3(10, 10, 10); // reset blade
+            }
+        }
     }
 }

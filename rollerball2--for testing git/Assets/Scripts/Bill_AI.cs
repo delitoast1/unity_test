@@ -30,7 +30,7 @@ public class Bill_AI : MonoBehaviour
 
     private void Start()
     {
-        rb.AddForce(Vector3.up * 10f);
+        //rb.AddForce(Vector3.up * 10f);
     }
     private void Awake()
     {
@@ -57,12 +57,12 @@ public class Bill_AI : MonoBehaviour
                 if (hit.transform.CompareTag("Player"))
                 {
                     playerinsight = true;
-                    Debug.Log("Raycast hit: " + hit.transform.name);
+                    //Debug.Log("Raycast hit: " + hit.transform.name);
                 }
                 else
                 {
                     playerinsight = false;
-                    Debug.Log("Raycast hit: " + hit.transform.name);
+                   // Debug.Log("Raycast hit: " + hit.transform.name);
                 }
             }
             else
@@ -81,7 +81,7 @@ public class Bill_AI : MonoBehaviour
         playerinattackrange = Physics.CheckSphere(transform.position, attackRange, whatIsPlayer);
         if (!playerinsight && !playerinattackrange)
         {
-            Debug.Log("AI is patrolling...");
+            //Debug.Log("AI is patrolling...");
             patrolling();
         }
         if (playerinsight && !playerinattackrange)
@@ -134,7 +134,7 @@ public class Bill_AI : MonoBehaviour
 
             if (stuckTimer >= stuckTimeThresold)
             {
-                Debug.Log("Agent stuck for too long! Resetting patrol...");
+                //Debug.Log("Agent stuck for too long! Resetting patrol...");
                 walkPointSet = false;
                 stuckTimer = 0f;
             }

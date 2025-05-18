@@ -49,8 +49,12 @@ public class Lighsaber : MonoBehaviour
     private Vector3 _triggerEnterBasePosition;
     private Vector3 _triggerExitTipPosition;
     private bool _isAttacking = false;
+    private bool _isConfirm = false;
     private float _attackTimer = 0f;
     public GameObject player;
+    private Vector3 offset=new Vector3(-12f,-1f,-11f); //攝影機 離 母球 相對位置
+    public GameObject point;
+    
 
     // Duration of attack window (e.g., 0.5 seconds)
     [SerializeField]
@@ -90,37 +94,37 @@ public class Lighsaber : MonoBehaviour
     }
     void Update()
     {
+        
         if (Input.GetMouseButtonDown(0))
         {
-            _isAttacking = true;
+            
             _isTrailActive = false;
-            _attackTimer = _attackDuration;
+            _attackTimer = 0f; // start timer fresh
+            _isConfirm = false;
 
-            // Hide trail initially
             _meshParent.SetActive(false);
-
-            // Clear mesh early so it doesn't persist old trail
             _mesh.Clear();
             _frameCount = 0;
         }
 
-        if (_isAttacking)
+        if (Input.GetMouseButtonUp(0))
         {
-            _attackTimer -= Time.deltaTime;
+            _isAttacking = true;
+            _isConfirm = true; // flag to start countdown
+            _isTrailActive = true;
+            _meshParent.SetActive(true);
+        }
 
-            // After delay, show trail
-            if (!_isTrailActive && _attackTimer <= (_attackDuration - _trailDelay))
-            {
-                _isTrailActive = true;
-                _meshParent.SetActive(true);
-            }
+        if (_isConfirm)
+        {
+            _attackTimer += Time.deltaTime;
 
-            // End attack
-            if (_attackTimer <= 0f)
+            if (_attackTimer >= _attackDuration)
             {
                 _isAttacking = false;
                 _isTrailActive = false;
                 _meshParent.SetActive(false);
+                _isConfirm = false; // done
             }
         }
     }
@@ -235,9 +239,41 @@ public class Lighsaber : MonoBehaviour
         GameObject[] slices = Slicer.Slice(plane, other.gameObject);
         Destroy(other.gameObject);
 
-        Rigidbody rigidbody = slices[1].GetComponent<Rigidbody>();
-        Vector3 newNormal = transformedNormal + Vector3.up * _forceAppliedToCut;
-        rigidbody.AddForce(newNormal, ForceMode.Impulse);
+        // Apply interaction logic to slices
+        foreach (GameObject slice in slices)
+        {
+            Rigidbody rb = slice.GetComponent<Rigidbody>();
+            Collider col = slice.GetComponent<Collider>();
+            StartCoroutine(DisableInteractionAfterDelay(slice, rb, col, 10f));
+        }
+
+        // Optional: push one half
+        if (slices.Length > 1)
+        {
+            Rigidbody rb = slices[1].GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                Vector3 force = transformedNormal + Vector3.up * _forceAppliedToCut;
+                rb.AddForce(force, ForceMode.Impulse);
+            }
+        }
     }
+    private IEnumerator DisableInteractionAfterDelay(GameObject obj, Rigidbody rb, Collider col, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+            Destroy(rb);
+        }
+
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+    }
+
 
 }
