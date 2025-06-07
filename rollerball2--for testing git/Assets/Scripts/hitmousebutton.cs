@@ -36,11 +36,16 @@ public class hitmousebutton : MonoBehaviour
         if (isGrowing)
         {
             Vector3 scale = bladelength.transform.localScale;
-            scale.z += growthRate * Time.deltaTime;
+            if (scale.z < 140)
+            {
+                scale.z += growthRate * Time.deltaTime;
+            }
+            
             
             
             
             bladelength.transform.localScale = scale;
+            
         }
         else if (resetTimer > 0f)
         {

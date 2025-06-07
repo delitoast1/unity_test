@@ -137,7 +137,7 @@ public class Lighsaber : MonoBehaviour
 
         // Face forward in camera direction (flat)
         Vector3 lookDirection = Camera.main.transform.forward;
-        lookDirection.y = 0f;
+        //lookDirection.y = 0f;
         lookDirection.Normalize();
 
         if (lookDirection.sqrMagnitude > 0f)
@@ -146,7 +146,7 @@ public class Lighsaber : MonoBehaviour
             Quaternion lookRotation = Quaternion.LookRotation(lookDirection);
 
             // Apply extra Y-axis offset (rotate left/right)
-            Quaternion offsetRotation = Quaternion.Euler(0, 90f, 0); // -20¢X = slightly to the left
+            Quaternion offsetRotation = Quaternion.Euler(0, 90f, -20); // -20¢X = slightly to the left
 
             // Combine rotations
             transform.rotation = lookRotation * offsetRotation;
@@ -203,7 +203,7 @@ public class Lighsaber : MonoBehaviour
         _triggerEnterBasePosition = _base.transform.position;
     }
 
-    private void OnTriggerExit(Collider other)
+    private void OnTriggerExit(Collider collision)
     {
         if (!_isAttacking) return;
         _triggerExitTipPosition = _tip.transform.position;
@@ -217,10 +217,10 @@ public class Lighsaber : MonoBehaviour
         Vector3 normal = Vector3.Cross(side1, side2).normalized;
 
         //Transform the normal so that it is aligned with the object we are slicing's transform.
-        Vector3 transformedNormal = ((Vector3)(other.gameObject.transform.localToWorldMatrix.transpose * normal)).normalized;
+        Vector3 transformedNormal = ((Vector3)(collision.gameObject.transform.localToWorldMatrix.transpose * normal)).normalized;
 
         //Get the enter position relative to the object we're cutting's local transform
-        Vector3 transformedStartingPoint = other.gameObject.transform.InverseTransformPoint(_triggerEnterTipPosition);
+        Vector3 transformedStartingPoint = collision.gameObject.transform.InverseTransformPoint(_triggerEnterTipPosition);
 
         Plane plane = new Plane();
 
@@ -236,8 +236,8 @@ public class Lighsaber : MonoBehaviour
             plane = plane.flipped;
         }
 
-        GameObject[] slices = Slicer.Slice(plane, other.gameObject);
-        Destroy(other.gameObject);
+        GameObject[] slices = Slicer.Slice(plane, collision.gameObject);
+        Destroy(collision.gameObject);
 
         // Apply interaction logic to slices
         foreach (GameObject slice in slices)

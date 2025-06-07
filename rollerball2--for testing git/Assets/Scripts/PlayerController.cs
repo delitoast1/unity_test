@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Teleport in WASD direction (if moving)
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetMouseButtonDown(4))
         {
             if (movement.sqrMagnitude > 0.01f)
             {
