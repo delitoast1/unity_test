@@ -12,11 +12,31 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = true;
     public float jumpForce = 5f;
     public float teleportDistance = 10f;
+    [SerializeField] private float StartingHealth;
+    private float health;
 
+    public float Health
+    {
+        get
+        {
+            return health;
+        }
+        set
+        {
+            health = value;
+            Debug.Log(health);
+
+            if (health <= 0f)
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        Health = StartingHealth;
         rb = GetComponent<Rigidbody>();
     }
 
@@ -52,12 +72,13 @@ public class PlayerController : MonoBehaviour
         }
 
         // Teleport in WASD direction (if moving)
-        if (Input.GetMouseButtonDown(4))
+        if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             if (movement.sqrMagnitude > 0.01f)
             {
                 Vector3 teleportDirection = movement.normalized;
                 transform.position += teleportDirection * teleportDistance;
+                rb.AddForce(teleportDirection * speed);
             }
         }
     }

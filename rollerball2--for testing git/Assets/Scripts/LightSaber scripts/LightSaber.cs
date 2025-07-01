@@ -3,12 +3,18 @@ using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using TMPro;
 public class Lighsaber : MonoBehaviour
 {
+    //score counting init
+    public TextMeshProUGUI scoreText;
+    
+    private static int count = 0;
+    private bool countInit = false;
     //The number of vertices to create per frame
     private const int NUM_VERTICES = 12;
     public Vector3 lockedRotationEuler = new Vector3(0, 0, 0);
+
 
     [SerializeField]
     [Tooltip("The blade object")]
@@ -52,9 +58,9 @@ public class Lighsaber : MonoBehaviour
     private bool _isConfirm = false;
     private float _attackTimer = 0f;
     public GameObject player;
-    private Vector3 offset=new Vector3(-12f,-1f,-11f); //攝影機 離 母球 相對位置
-    public GameObject point;
+    private Vector3 offset = new Vector3(-12f, -1f, -11f); //攝影機 離 母球 相對位置
     
+
 
     // Duration of attack window (e.g., 0.5 seconds)
     [SerializeField]
@@ -68,9 +74,16 @@ public class Lighsaber : MonoBehaviour
 
 
     private bool _isTrailActive = false;
-    
+
     void Start()
     {
+        //Init count
+        if (!countInit)
+        {
+            count = 0;
+            countInit = true;
+        }
+        SetCountText();
         //Init mesh and triangles
         _meshParent.transform.position = Vector3.zero;
         _mesh = new Mesh();
@@ -80,9 +93,9 @@ public class Lighsaber : MonoBehaviour
         trailMaterial.SetColor("Color_8F0C0815", _colour);
         _meshParent.GetComponent<MeshRenderer>().sharedMaterial = trailMaterial;
 
-        Material bladeMaterial = Instantiate(_blade.GetComponent<MeshRenderer>().sharedMaterial);
+       /* Material bladeMaterial = Instantiate(_blade.GetComponent<MeshRenderer>().sharedMaterial);
         bladeMaterial.SetColor("Color_AF2E1BB", _colour);
-        _blade.GetComponent<MeshRenderer>().sharedMaterial = bladeMaterial;
+        _blade.GetComponent<MeshRenderer>().sharedMaterial = bladeMaterial;*/
 
         _vertices = new Vector3[_trailFrameLength * NUM_VERTICES];
         _triangles = new int[_vertices.Length];
@@ -90,14 +103,14 @@ public class Lighsaber : MonoBehaviour
         //Set starting position for tip and base
         _previousTipPosition = _tip.transform.position;
         _previousBasePosition = _base.transform.position;
-        
+
     }
     void Update()
     {
-        
+
         if (Input.GetMouseButtonDown(0))
         {
-            
+
             _isTrailActive = false;
             _attackTimer = 0f; // start timer fresh
             _isConfirm = false;
@@ -127,6 +140,21 @@ public class Lighsaber : MonoBehaviour
                 _isConfirm = false; // done
             }
         }
+
+        if (_isAttacking)
+        {
+            Vector3 direction = _tip.transform.position - _base.transform.position;
+            float distance = direction.magnitude;
+
+            if (Physics.Raycast(_base.transform.position, direction.normalized, out RaycastHit hit, distance))
+            {
+                if (hit.collider != null && hit.collider.gameObject != null)
+                {
+                    AttemptSlice(hit.collider.gameObject);
+                }
+            }
+        }
+        Debug.DrawLine(_base.transform.position, _tip.transform.position, Color.green, 0.1f);
     }
 
 
@@ -193,6 +221,10 @@ public class Lighsaber : MonoBehaviour
         _frameCount += NUM_VERTICES;
     }
 
+    void SetCountText()
+    {
+        scoreText.text = "Score: " + count.ToString();
+    }
 
 
 
@@ -244,7 +276,9 @@ public class Lighsaber : MonoBehaviour
         {
             Rigidbody rb = slice.GetComponent<Rigidbody>();
             Collider col = slice.GetComponent<Collider>();
-            //StartCoroutine(DisableInteractionAfterDelay(slice, rb, col, 10f));
+            StartCoroutine(DisableInteractionAfterDelay(slice, rb, col, 5f));
+            count += 1;
+            SetCountText();
         }
 
         // Optional: push one half
@@ -274,6 +308,41 @@ public class Lighsaber : MonoBehaviour
             col.enabled = false;
         }
     }
+    private void AttemptSlice(GameObject target)
+    {
+        // Avoid double slicing
+        if (!_isAttacking || target == null) return;
 
+        _triggerExitTipPosition = _tip.transform.position;
 
+        Vector3 side1 = _triggerExitTipPosition - _triggerEnterTipPosition;
+        Vector3 side2 = _triggerExitTipPosition - _triggerEnterBasePosition;
+        Vector3 normal = Vector3.Cross(side1, side2).normalized;
+
+        Vector3 transformedNormal = ((Vector3)(target.transform.localToWorldMatrix.transpose * normal)).normalized;
+        Vector3 transformedStartingPoint = target.transform.InverseTransformPoint(_triggerEnterTipPosition);
+
+        Plane plane = new Plane();
+        plane.SetNormalAndPosition(transformedNormal, transformedStartingPoint);
+
+        if (Vector3.Dot(Vector3.up, transformedNormal) < 0)
+            plane = plane.flipped;
+
+        GameObject[] slices = Slicer.Slice(plane, target);
+        Destroy(target);
+
+        foreach (GameObject slice in slices)
+        {
+            Rigidbody rb = slice.GetComponent<Rigidbody>();
+            Collider col = slice.GetComponent<Collider>();
+            count += 1;
+            SetCountText();
+        }
+
+        if (slices.Length > 1 && slices[1].TryGetComponent(out Rigidbody pushedRb))
+        {
+            Vector3 force = transformedNormal + Vector3.up * _forceAppliedToCut;
+            pushedRb.AddForce(force, ForceMode.Impulse);
+        }
+    }
 }

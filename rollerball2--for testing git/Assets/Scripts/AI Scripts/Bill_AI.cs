@@ -27,16 +27,29 @@ public class Bill_AI : MonoBehaviour
     public float sightRange, attackRange;
     public bool playerinsight, playerinattackrange;
     private Rigidbody rb;
+    private EnemyManager _manager;
 
+    public void SetManager(EnemyManager manager)
+    {
+        _manager = manager;
+    }
+
+    void OnDestroy()
+    {
+        if (_manager != null)
+        {
+            _manager.NotifyEnemyDestroyed();
+        }
+    }
     private void Start()
     {
-        //rb.AddForce(Vector3.up * 10f);
-    }
-    private void Awake()
-    {
-        player = GameObject.Find("Player").transform;
         agent = GetComponent<NavMeshAgent>();
     }
+    public void SetTarget(Transform playerTarget)
+    {
+        player = playerTarget;
+    }
+    
 
     private void Update()
     {

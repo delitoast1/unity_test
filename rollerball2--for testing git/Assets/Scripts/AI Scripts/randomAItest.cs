@@ -6,6 +6,7 @@ using UnityEngine.AI; //important
 //if you use this code you are contractually obligated to like the YT video
 public class randomAItest : MonoBehaviour //don't forget to change the script name if you haven't
 {
+    private EnemyManager _manager;
     public LayerMask whatIsGround, whatIsPlayer;
     public float sightRange, attackRange;
     public Transform player;
@@ -20,6 +21,10 @@ public class randomAItest : MonoBehaviour //don't forget to change the script na
         agent = GetComponent<NavMeshAgent>();
     }
 
+    public void SetManager(EnemyManager manager)
+    {
+        _manager = manager;
+    }
 
     void Update()
     {
@@ -55,6 +60,18 @@ public class randomAItest : MonoBehaviour //don't forget to change the script na
             }
         }
 
+    }
+    public void SetTarget(Transform playerTarget)
+    {
+        player = playerTarget;
+    }
+
+    void OnDestroy()
+    {
+        if (_manager != null)
+        {
+            _manager.NotifyEnemyDestroyed();
+        }
     }
     bool RandomPoint(Vector3 center, float range, out Vector3 result)
     {

@@ -3,12 +3,9 @@ using UnityEngine;
 public class pointfollowing : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public Transform ball;           // Drag your ball GameObject here
-                                     //public Vector3 offset;           // Optional: position offset relative to the ball
-                                     //public Vector3 offset2;           // Optional: position offset relative to the ball
-                                     //public Vector3 fixedRotationblade=new Vector3(90,0, 0);           // Optional: position offset relative to the ball
-                                     //public Vector3 fixedRotationhilt=new Vector3(90,0, 0);           // Optional: position offset relative to the ball
-
+    public Transform ball;           
+                                    
+    
     [SerializeField]
     private float leftOffset = 0.3f;
     [SerializeField]
