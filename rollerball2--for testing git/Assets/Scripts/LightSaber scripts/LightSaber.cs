@@ -58,7 +58,7 @@ public class Lighsaber : MonoBehaviour
     private bool _isConfirm = false;
     private float _attackTimer = 0f;
     public GameObject player;
-    private Vector3 offset = new Vector3(-12f, -1f, -11f); //ƒ·ºvæ˜ ¬˜ •¿≤y ¨€πÔ¶Ï∏m
+    private Vector3 offset = new Vector3(-12f, -1f, -11f); //ÊîùÂΩ±Ê©ü Èõ¢ ÊØçÁêÉ Áõ∏Â∞ç‰ΩçÁΩÆ
     
 
 
@@ -150,10 +150,15 @@ public class Lighsaber : MonoBehaviour
             {
                 if (hit.collider != null && hit.collider.gameObject != null)
                 {
-                    AttemptSlice(hit.collider.gameObject);
+                    // Only try slicing if the object has a Sliceable script
+                    if (hit.collider.GetComponent<Sliceable>() != null)
+                    {
+                        AttemptSlice(hit.collider.gameObject);
+                    }
                 }
             }
         }
+
         Debug.DrawLine(_base.transform.position, _tip.transform.position, Color.green, 0.1f);
     }
 
@@ -174,7 +179,7 @@ public class Lighsaber : MonoBehaviour
             Quaternion lookRotation = Quaternion.LookRotation(lookDirection);
 
             // Apply extra Y-axis offset (rotate left/right)
-            Quaternion offsetRotation = Quaternion.Euler(0, 90f, -20); // -20¢X = slightly to the left
+            Quaternion offsetRotation = Quaternion.Euler(0, 90f, -20); // -20¬∞ = slightly to the left
 
             // Combine rotations
             transform.rotation = lookRotation * offsetRotation;
@@ -335,6 +340,7 @@ public class Lighsaber : MonoBehaviour
         {
             Rigidbody rb = slice.GetComponent<Rigidbody>();
             Collider col = slice.GetComponent<Collider>();
+            StartCoroutine(DisableInteractionAfterDelay(slice, 10f)); // disable after 3 seconds
             count += 1;
             SetCountText();
         }
@@ -345,4 +351,29 @@ public class Lighsaber : MonoBehaviour
             pushedRb.AddForce(force, ForceMode.Impulse);
         }
     }
+    private IEnumerator DisableInteractionAfterDelay(GameObject obj, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Disable Rigidbody if it exists
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.useGravity = false;
+            rb.isKinematic = true;
+        }
+
+        // Disable Collider
+        Collider col = obj.GetComponent<Collider>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
+        // Optionally deactivate the GameObject
+        obj.SetActive(false);
+    }
+
 }
