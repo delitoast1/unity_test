@@ -14,7 +14,10 @@ public class PlayerController : MonoBehaviour
     public float teleportDistance = 10f;
     [SerializeField] private float StartingHealth;
     private float health;
-
+   [SerializeField] private GameObject outerDeflectLayer;
+    public Collider deflectCollider; // Assign this in the Inspector
+    public Transform deflectZoneTransform; // Assign your DeflectZone object here
+    public float distanceInFront = 1.5f;   // How far in front of the player
     public float Health
     {
         get
@@ -51,6 +54,19 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        
+
+        // Face forward in camera direction (flat)
+        // Calculate position in front of the camera's forward direction, relative to the player
+        Vector3 forward = cameraTransform.forward;
+        //forward.y = 0f; // Optional: flatten the Y to keep deflect zone level
+
+        deflectZoneTransform.position = transform.position + forward.normalized * distanceInFront;
+
+        // Optional: make deflect zone face same direction as camera
+        deflectZoneTransform.rotation = Quaternion.LookRotation(forward);
+
+        //player movement
         Vector3 camForward = cameraTransform.forward;
         camForward.y = 0f;
         camForward.Normalize();
@@ -81,8 +97,16 @@ public class PlayerController : MonoBehaviour
                 rb.AddForce(teleportDirection * speed);
             }
         }
+        if (Input.GetMouseButton(1))
+        {
+            deflectCollider.enabled = true;
+        }
+        else
+        {
+            deflectCollider.enabled = false;
+        }
     }
-
+    
     void OnCollisionEnter(Collision collision)
     {
         if (collision.contacts[0].normal.y > 0.5f) // Hit from below

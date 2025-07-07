@@ -1,18 +1,22 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering.Universal.Internal;
 
 public class Bill_AI : MonoBehaviour
 {
     private float stuckTimer = 0f;
     private float stuckTimeThresold = 3f;
     public NavMeshAgent agent;
-
+    
     public Transform player;
 
     public LayerMask whatIsGround, whatIsPlayer;
 
-    public float health;
+    public float health = 100f;
 
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform firePoint;
     //patrolling
     public Vector3 walkPoint;
     bool walkPointSet;
@@ -21,6 +25,9 @@ public class Bill_AI : MonoBehaviour
     //attacking
     public float timebetweenAttacks;
     bool alreadyattacked;
+    [SerializeField]private float forwardshotForce=10f;
+    [SerializeField] private float verticalshotForce=10f;
+    
     //public GameObject projectile;
 
     //states
@@ -65,7 +72,8 @@ public class Bill_AI : MonoBehaviour
 
             // Draw the ray (color depends on whether it hits the player)
             Ray ray = new Ray(eyePos, directionToPlayer.normalized);
-            if (Physics.Raycast(ray, out RaycastHit hit, distanceToPlayer))
+            int mask = ~LayerMask.GetMask("DeflectZone");
+            if (Physics.Raycast(ray, out RaycastHit hit, distanceToPlayer,mask))
             {
                 if (hit.transform.CompareTag("Player"))
                 {
@@ -179,30 +187,34 @@ public class Bill_AI : MonoBehaviour
         agent.SetDestination(transform.position);
 
         transform.LookAt(player);
-
-       /* if (!alreadyattacked)
-        {//attack code here
-
-            Rigidbody rb = Instantiate(projectile, transform.position, Quaternion.identity).GetComponent<Rigidbody>();
-            rb.AddForce(transform.forward * 32f, ForceMode.Impulse);
-            rb.AddForce(transform.up * 8f, ForceMode.Impulse);
-            alreadyattacked = true;
-            Invoke(nameof(ResetAttack), timebetweenAttacks);
-        }*/
+        if (!alreadyattacked)
+        {
+            fireProjectile();
+            StartCoroutine(AttackCoolDownRoutine());
+        }
+        
     }
 
+    private void fireProjectile()
+    {
+        Rigidbody projectileRB = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity).GetComponent<Rigidbody>();
+        projectileRB.AddForce(transform.forward * forwardshotForce, ForceMode.Impulse);
+        projectileRB.AddForce(transform.up * verticalshotForce, ForceMode.Impulse);
+        Destroy(projectileRB.gameObject, 3f);
+    }
     private void ResetAttack()
     {
         alreadyattacked = false;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    public void TakeDamage(int damage)
+    public void TakeDamage(float damage)
     {
         health -= damage;
-
+        Debug.Log($"Enemy took {damage} damage.");
         if (health <= 0)
         {
+            Debug.Log("Enemy destroyed!");
             Invoke(nameof(DestroyEnemy), 0.5f);
         }
     }
@@ -217,5 +229,11 @@ public class Bill_AI : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, attackRange);
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, sightRange);
+    }
+    private IEnumerator AttackCoolDownRoutine()
+    {
+        alreadyattacked = true;
+        yield return new WaitForSeconds(timebetweenAttacks);
+        alreadyattacked = false;
     }
 }

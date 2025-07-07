@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 2078350670863324349}
   m_Layer: 0
   m_Name: Bill
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -221,7 +221,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -303,10 +303,14 @@ MonoBehaviour:
   whatIsPlayer:
     serializedVersion: 2
     m_Bits: 64
-  health: 120
+  health: 40
+  projectilePrefab: {fileID: 6490805295512304933, guid: e4115438c529f674caed4105d859ad94, type: 3}
+  firePoint: {fileID: 7905395989071113540}
   walkPoint: {x: 0, y: 0, z: 0}
   walkPointRange: 5
-  timebetweenAttacks: 0.5
+  timebetweenAttacks: 0.75
+  forwardshotForce: 28.7
+  verticalshotForce: 0
   sightRange: 20
   attackRange: 12
   playerinsight: 1
@@ -513,6 +517,37 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &3630773457704202410
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7905395989071113540}
+  m_Layer: 0
+  m_Name: firepoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7905395989071113540
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3630773457704202410}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.99999565, z: -0, w: 0.0029406466}
+  m_LocalPosition: {x: -0.5580529, y: -0.015000026, z: 0.04099371}
+  m_LocalScale: {x: 0.7138279, y: 0.7138281, z: 0.7138279}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7880968182991111667}
+  m_LocalEulerAnglesHint: {x: 0, y: 180.337, z: 0}
 --- !u!1 &4002576424122847408
 GameObject:
   m_ObjectHideFlags: 0
@@ -653,7 +688,8 @@ Transform:
   m_LocalPosition: {x: 1.0402455, y: 0.60253173, z: -0.186994}
   m_LocalScale: {x: 1.4008979, y: 1.4008975, z: 1.4008979}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7905395989071113540}
   m_Father: {fileID: 1350644734696430125}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1487176742182990701
