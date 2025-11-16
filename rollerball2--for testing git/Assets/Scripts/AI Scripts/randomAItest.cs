@@ -28,39 +28,51 @@ public class randomAItest : MonoBehaviour //don't forget to change the script na
 
     void Update()
     {
-        bool inSightRadius = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
-        if (inSightRadius)
+        if (player == null)
         {
+            // Optional: try to auto-find the player
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null) player = p.transform;
+        }
 
-            Vector3 eyePos = transform.position; // ground-level ray origin
+        bool inSightRadius = Physics.CheckSphere(transform.position, sightRange, whatIsPlayer);
+        bool hasLineOfSight = false;
+
+        if (inSightRadius && player != null)
+        {
+            Vector3 eyePos = transform.position; // you can add + Vector3.up * 1.0f if you want eye height
             Vector3 directionToPlayer = player.position - eyePos;
             float distanceToPlayer = directionToPlayer.magnitude;
 
-            // Draw the ray (color depends on whether it hits the player)
             Ray ray = new Ray(eyePos, directionToPlayer.normalized);
             if (Physics.Raycast(ray, out RaycastHit hit, distanceToPlayer))
             {
                 if (hit.transform.CompareTag("Player"))
                 {
+                    hasLineOfSight = true;
                     chase();
-                    //Debug.Log("bob Raycast hit: " + hit.transform.name);
+                    // Debug.Log("Chasing player");
                 }
-
             }
-
-
         }
-        if (agent.remainingDistance <= agent.stoppingDistance) //done with path
+
+        // Patrol ONLY when not seeing player
+        if (!hasLineOfSight)
         {
-            Vector3 point;
-            if (RandomPoint(centrePoint.position, range, out point)) //pass in our centre point and radius of area
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
             {
-                Debug.DrawRay(point, Vector3.up, Color.blue, 1.0f); //so you can see with gizmos
-                agent.SetDestination(point);
+                Vector3 center = centrePoint != null ? centrePoint.position : transform.position;
+
+                Vector3 point;
+                if (RandomPoint(center, range, out point))
+                {
+                    Debug.DrawRay(point, Vector3.up, Color.blue, 1.0f);
+                    agent.SetDestination(point);
+                }
             }
         }
-
     }
+
     public void SetTarget(Transform playerTarget)
     {
         player = playerTarget;
