@@ -150,10 +150,11 @@ public class Lighsaber : MonoBehaviour
             {
                 if (hit.collider != null && hit.collider.gameObject != null)
                 {
-                    // Only try slicing if the object has a Sliceable script
-                    if (hit.collider.GetComponent<Sliceable>() != null)
+                    // Colliders may be on children while Sliceable is on the mesh root.
+                    Sliceable sliceable = hit.collider.GetComponentInParent<Sliceable>();
+                    if (sliceable != null)
                     {
-                        AttemptSlice(hit.collider.gameObject);
+                        AttemptSlice(sliceable.gameObject);
                     }
                 }
             }
@@ -235,7 +236,8 @@ public class Lighsaber : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!_isAttacking) return;
+        if (!_isAttacking || other.GetComponentInParent<Sliceable>() == null) return;
+
         _triggerEnterTipPosition = _tip.transform.position;
         _triggerEnterBasePosition = _base.transform.position;
     }
@@ -243,6 +245,11 @@ public class Lighsaber : MonoBehaviour
     private void OnTriggerExit(Collider collision)
     {
         if (!_isAttacking) return;
+
+        Sliceable sliceable = collision.GetComponentInParent<Sliceable>();
+        if (sliceable == null) return;
+
+        GameObject target = sliceable.gameObject;
         _triggerExitTipPosition = _tip.transform.position;
 
         //Create a triangle between the tip and base so that we can get the normal
@@ -254,10 +261,10 @@ public class Lighsaber : MonoBehaviour
         Vector3 normal = Vector3.Cross(side1, side2).normalized;
 
         //Transform the normal so that it is aligned with the object we are slicing's transform.
-        Vector3 transformedNormal = ((Vector3)(collision.gameObject.transform.localToWorldMatrix.transpose * normal)).normalized;
+        Vector3 transformedNormal = ((Vector3)(target.transform.localToWorldMatrix.transpose * normal)).normalized;
 
         //Get the enter position relative to the object we're cutting's local transform
-        Vector3 transformedStartingPoint = collision.gameObject.transform.InverseTransformPoint(_triggerEnterTipPosition);
+        Vector3 transformedStartingPoint = target.transform.InverseTransformPoint(_triggerEnterTipPosition);
 
         Plane plane = new Plane();
 
@@ -273,8 +280,10 @@ public class Lighsaber : MonoBehaviour
             plane = plane.flipped;
         }
 
-        GameObject[] slices = Slicer.Slice(plane, collision.gameObject);
-        Destroy(collision.gameObject);
+        GameObject[] slices = Slicer.Slice(plane, target);
+        if (slices.Length == 0) return;
+
+        Destroy(target);
 
         // Apply interaction logic to slices
         foreach (GameObject slice in slices)
@@ -334,6 +343,8 @@ public class Lighsaber : MonoBehaviour
             plane = plane.flipped;
 
         GameObject[] slices = Slicer.Slice(plane, target);
+        if (slices.Length == 0) return;
+
         Destroy(target);
 
         foreach (GameObject slice in slices)
@@ -354,6 +365,9 @@ public class Lighsaber : MonoBehaviour
     private IEnumerator DisableInteractionAfterDelay(GameObject obj, float delay)
     {
         yield return new WaitForSeconds(delay);
+
+        // The slice may have been cut again and destroyed while this coroutine waited.
+        if (obj == null) yield break;
 
         // Disable Rigidbody if it exists
         Rigidbody rb = obj.GetComponent<Rigidbody>();

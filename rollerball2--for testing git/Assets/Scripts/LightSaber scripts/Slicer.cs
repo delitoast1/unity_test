@@ -16,18 +16,18 @@ namespace Assets.Scripts
         /// <returns></returns>
         public static GameObject[] Slice(Plane plane, GameObject objectToCut)
         {
-            //Get the current mesh and its verts and tris
-            Mesh mesh = objectToCut.GetComponent<MeshFilter>().mesh;
-            var a = mesh.GetSubMesh(0);
-            Sliceable sliceable = objectToCut.GetComponent<Sliceable>();
-
-            if (sliceable == null)
+            if (objectToCut == null ||
+                !objectToCut.TryGetComponent(out MeshFilter meshFilter) ||
+                meshFilter.sharedMesh == null ||
+                !objectToCut.TryGetComponent(out MeshRenderer _) ||
+                !objectToCut.TryGetComponent(out Sliceable sliceable))
             {
-                //throw new NotSupportedException("Cannot slice non sliceable object, add the sliceable script to the object or inherit from sliceable to support slicing");
-                Debug.Log("nope");
-                
-                
+                Debug.LogWarning($"Cannot slice '{objectToCut?.name}': required components are missing.");
+                return Array.Empty<GameObject>();
             }
+
+            // Get an instance of the mesh so slicing does not modify the source asset.
+            Mesh mesh = meshFilter.mesh;
 
             //Create left and right slice of hollow object
             SlicesMetadata slicesMeta = new SlicesMetadata(plane, mesh, sliceable.IsSolid, sliceable.ReverseWireTriangles, sliceable.ShareVertices, sliceable.SmoothVertices);
